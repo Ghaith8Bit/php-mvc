@@ -2,6 +2,7 @@
 
 namespace Core\Http;
 
+use Core\View\View;
 use Exception;
 
 class Route
@@ -33,32 +34,64 @@ class Route
         $action = Self::$routes[$method][$path] ?? false;
 
         if (!$action) {
-            //Show the 404.php
+            View::make('errors.index', [
+                'code' => '404',
+                'title' => 'Page not found',
+                'description' => 'The page you are looking for might have been removed had its name changed or is temporarily unavailable.'
+            ]);
         } else {
             if (is_callable($action)) {
                 call_user_func_array($action, []);
             } elseif (is_array($action)) {
                 try {
+                    // Extract the controller and method names from the route
                     $controllerName = $action[0];
                     $methodName = $action[1];
-                    if (!class_exists($controllerName))
-                        throw new Exception("There's no such controller");
-                    if (!method_exists($controllerName, $methodName))
-                        throw new Exception("There's no such method in $controllerName controller");
+
+                    // Check if the specified controller exists
+                    if (!class_exists($controllerName)) {
+                        throw new Exception("Invalid Controller: '$controllerName'");
+                    }
+
+                    // Check if the specified method exists in the controller
+                    if (!method_exists($controllerName, $methodName)) {
+                        throw new Exception("Invalid Method: '$methodName' in '$controllerName' controller");
+                    }
+
+                    // Call the specified method in the controller
                     call_user_func_array([new $controllerName, $methodName], []);
                 } catch (Exception $e) {
-                    echo "Error: " . $e->getMessage();
+                    // If an error occurs, show the error page
+                    View::make('errors.index', [
+                        'code' => '404',
+                        'title' => 'Page Not Found',
+                        'description' => $e->getMessage()
+                    ]);
                 }
             } elseif (is_string($action)) {
                 try {
+                    // Extract the controller and method names from the route
                     list($controllerName, $methodName) = explode('@', $action);
-                    if (!class_exists($controllerName))
-                        throw new Exception("There's no such controller");
-                    if (!method_exists($controllerName, $methodName))
-                        throw new Exception("There's no such method in $controllerName controller");
+
+                    // Check if the specified controller exists
+                    if (!class_exists($controllerName)) {
+                        throw new Exception("Invalid Controller: '$controllerName'");
+                    }
+
+                    // Check if the specified method exists in the controller
+                    if (!method_exists($controllerName, $methodName)) {
+                        throw new Exception("Invalid Method: '$methodName' in '$controllerName' controller");
+                    }
+
+                    // Call the specified method in the controller
                     call_user_func_array([new $controllerName, $methodName], []);
                 } catch (Exception $e) {
-                    echo "Error: " . $e->getMessage();
+                    // If an error occurs, show the error page
+                    View::make('errors.index', [
+                        'code' => '404',
+                        'title' => 'Page Not Found',
+                        'description' => $e->getMessage()
+                    ]);
                 }
             }
         }

@@ -139,11 +139,10 @@
         <div class="notfound">
             <div class="notfound-404">
                 <div></div>
-                <h1>404</h1>
+                <h1><?php echo $code ?></h1>
             </div>
-            <h2>Page not found</h2>
-            <p>The page you are looking for might have been removed had its name changed or is temporarily unavailable.
-            </p>
+            <h2><?php echo $title ?></h2>
+            <p><?php echo $description ?></p>
             <a href="/">home page</a>
         </div>
     </div>
