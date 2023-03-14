@@ -2,7 +2,8 @@
     "name": "ghaith/mvc",
     "autoload": {
         "psr-4": {
-            "Ghaith\\Mvc\\": "src/"
+            "Core\\": "src/",
+            "App\\": "app/"
         }
     },
     "authors": [
