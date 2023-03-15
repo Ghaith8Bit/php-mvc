@@ -26,6 +26,19 @@ class Route
         Self::$routes['post'][$path] = $action;
     }
 
+    //This function for creating put request routes 
+    public static function put(string $path, callable|array|string $action)
+    {
+        Self::$routes['put'][$path] = $action;
+    }
+
+    //This function for creating delete request routes 
+    public static function delete(string $path, callable|array|string $action)
+    {
+        Self::$routes['delete'][$path] = $action;
+    }
+
+
     public function resolve()
     {
         $method = $this->request->getMethod();
