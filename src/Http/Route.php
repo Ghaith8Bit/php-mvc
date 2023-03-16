@@ -7,105 +7,112 @@ use Exception;
 
 class Route
 {
-    protected static array $routes;
-    protected $request;
-    public function __construct(Request $req)
+    // Declare a static array to store all registered routes
+    protected static array $routes = [];
+    // Declare an instance variable to hold the current HTTP request
+    protected Request $request;
+
+    /**
+     * Constructor that takes a Request object
+     */
+    public function __construct(Request $request)
     {
-        $this->request = $req;
+        $this->request = $request;
     }
 
-    //This function for creating get request routes 
-    public static function get(string $path, callable|array|string $action)
+    /**
+     * Register a GET route
+     */
+    public static function get(string $path, callable|array|string $action): void
     {
         Self::$routes['get'][$path] = $action;
     }
 
-    //This function for creating post request routes 
-    public static function post(string $path, callable|array|string $action)
+    /**
+     * Register a POST route
+     */
+    public static function post(string $path, callable|array|string $action): void
     {
         Self::$routes['post'][$path] = $action;
     }
 
-    //This function for creating put request routes 
-    public static function put(string $path, callable|array|string $action)
+    /**
+     * Register a PUT route
+     */
+    public static function put(string $path, callable|array|string $action): void
     {
         Self::$routes['put'][$path] = $action;
     }
 
-    //This function for creating delete request routes 
-    public static function delete(string $path, callable|array|string $action)
+    /**
+     * Register a DELETE route
+     */
+    public static function delete(string $path, callable|array|string $action): void
     {
         Self::$routes['delete'][$path] = $action;
     }
 
-
-    public function resolve()
+    /**
+     * Resolve the route and execute the corresponding action
+     */
+    public function resolve(): void
     {
         $method = $this->request->getMethod();
         $path = $this->request->getPath();
 
+        // Check if the requested method exists
+        if (!isset(Self::$routes[$method])) {
+            View::error([
+                'code' => 404,
+                'title' => 'Method Not Found',
+                'description' => "The requested method '$method' was not found on this server.",
+            ]);
+        }
+
+        // Retrieve the callback for the specified path and method
         $action = Self::$routes[$method][$path] ?? false;
 
+        // If the route doesn't exist, show a 404 error page
         if (!$action) {
-            View::make('errors.index', [
-                'code' => '404',
-                'title' => 'Page not found',
-                'description' => 'The page you are looking for might have been removed had its name changed or is temporarily unavailable.'
+            View::error([
+                'code' => 404,
+                'title' => 'Page Not Found',
+                'description' => "The requested URL '$path' was not found on this server.",
             ]);
-        } else {
-            if (is_callable($action)) {
-                call_user_func_array($action, []);
-            } elseif (is_array($action)) {
-                try {
-                    // Extract the controller and method names from the route
-                    $controllerName = $action[0];
-                    $methodName = $action[1];
+        }
+        // If the route maps to a callable function, call it with no parameters
+        if (is_callable($action)) {
+            call_user_func_array($action, []);
+        }
+        // If the route maps to a controller class name or a controller class method, try to execute it
+        elseif (is_array($action) || is_string($action)) {
+            try {
+                // Parse the controller class name and method name from the route
+                list($controllerName, $methodName) = is_array($action) ? $action : explode('@', $action);
 
-                    // Check if the specified controller exists
-                    if (!class_exists($controllerName)) {
-                        throw new Exception("Invalid Controller: '$controllerName'");
-                    }
-
-                    // Check if the specified method exists in the controller
-                    if (!method_exists($controllerName, $methodName)) {
-                        throw new Exception("Invalid Method: '$methodName' in '$controllerName' controller");
-                    }
-
-                    // Call the specified method in the controller
-                    call_user_func_array([new $controllerName, $methodName], []);
-                } catch (Exception $e) {
-                    // If an error occurs, show the error page
-                    View::make('errors.index', [
-                        'code' => '404',
-                        'title' => 'Page Not Found',
-                        'description' => $e->getMessage()
-                    ]);
+                // Check if the specified controller exists
+                if (!class_exists($controllerName)) {
+                    $title = 'Controller Not Found';
+                    $description = "The specified controller '$controllerName' does not exist.";
+                    throw new Exception($description);
                 }
-            } elseif (is_string($action)) {
-                try {
-                    // Extract the controller and method names from the route
-                    list($controllerName, $methodName) = explode('@', $action);
-
-                    // Check if the specified controller exists
-                    if (!class_exists($controllerName)) {
-                        throw new Exception("Invalid Controller: '$controllerName'");
-                    }
-
-                    // Check if the specified method exists in the controller
-                    if (!method_exists($controllerName, $methodName)) {
-                        throw new Exception("Invalid Method: '$methodName' in '$controllerName' controller");
-                    }
-
-                    // Call the specified method in the controller
-                    call_user_func_array([new $controllerName, $methodName], []);
-                } catch (Exception $e) {
-                    // If an error occurs, show the error page
-                    View::make('errors.index', [
-                        'code' => '404',
-                        'title' => 'Page Not Found',
-                        'description' => $e->getMessage()
-                    ]);
+                // Instantiate the specified controller
+                $controller = new $controllerName;
+                // Check if the specified method exists in the controller
+                if (!method_exists($controller, $methodName)) {
+                    $title = 'Method Not Found';
+                    $description = "The specified method '$methodName' does not exist in '$controllerName' controller.";
+                    throw new Exception($description);
                 }
+                // Execute the specified method in the controller with no parameters
+                call_user_func_array([$controller, $methodName], []);
+            } catch (Exception $e) {
+                // If any errors occur, show the error page
+                View::error([
+                    'code' => 404,
+                    'title' => $title ?? 'Page Not Found',
+                    'description' => $description ?? "The requested URL '$path' was not found on this server.",
+                ]);
             }
         }
     }
