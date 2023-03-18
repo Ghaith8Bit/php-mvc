@@ -53,8 +53,6 @@ class View
         $title = $error['title'] ?? 'Server Error';
         $description = $error['description'] ?? 'An error occurred on the server.';
 
-        // Set the HTTP response code and render the error page
-        http_response_code($code);
         View::make('errors.index', compact('code', 'title', 'description'));
     }
 }
