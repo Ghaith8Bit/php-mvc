@@ -1,5 +1,6 @@
 <?php
 
+use Core\Application;
 use Core\View\View;
 
 if (!function_exists('env')) {
@@ -34,5 +35,16 @@ if (!function_exists('view')) {
     function view($view, $params = [])
     {
         View::make($view, $params);
+    }
+}
+
+if (!function_exists('app')) {
+    function app()
+    {
+        static $instance;
+        if (!isset($instance)) {
+            $instance = new Application;
+        }
+        return $instance;
     }
 }
