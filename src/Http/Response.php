@@ -15,7 +15,7 @@ class Response
      *
      * @return  response
      */
-    public function setStatusCode($statusCode): Self
+    public function setStatusCode($statusCode): self
     {
         $this->statusCode = $statusCode;
 
@@ -29,7 +29,7 @@ class Response
      *
      * @return  response
      */
-    public function setBody($body): Self
+    public function setBody($body): self
     {
         $this->body = $body;
 
@@ -44,7 +44,7 @@ class Response
      *
      * @return  response
      */
-    public function setHeaders($name, $value): Self
+    public function setHeaders($name, $value): self
     {
         $this->headers[$name] = $value;
 
@@ -58,7 +58,7 @@ class Response
      *
      * @return  response
      */
-    public function json($data): Self
+    public function json($data): self
     {
         $this->setHeaders('Content-Type',  'application/json');
         $this->setBody(json_encode($data));
@@ -73,7 +73,7 @@ class Response
      *
      * @return  response
      */
-    public function view($view, $data = []): Self
+    public function view($view, $data = []): self
     {
         $this->setHeaders('Content-Type', 'text/html');
         $this->setBody(view($view, $data));
@@ -88,7 +88,7 @@ class Response
      *
      * @return  response
      */
-    public function viewError($data = []): Self
+    public function viewError($data = []): self
     {
         $this->setHeaders('Content-Type', 'text/html');
         $this->setBody(view('errors.index', $data));

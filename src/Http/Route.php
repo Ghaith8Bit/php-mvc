@@ -61,7 +61,7 @@ class Route
         $contentType = strpos($path, '/api') === 0 ? 'application/json' : 'text/html';
 
         // Check if the requested method exists
-        if (!isset(Self::$routes[$method])) {
+        if (!isset(self::$routes[$method])) {
             $data = [
                 'code' => 404,
                 'title' => 'Method Not Found',
@@ -71,7 +71,7 @@ class Route
         }
 
         // Retrieve the callback for the specified path and method
-        $action = Self::$routes[$method][$path] ?? false;
+        $action = self::$routes[$method][$path] ?? false;
 
 
         // If the route doesn't exist, show a 404 error page
